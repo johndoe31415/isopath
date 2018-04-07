@@ -22,6 +22,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
 #include <string.h>
 #include "board.h"
 
@@ -33,37 +35,70 @@ static const char* dump_tile_char[] = {
 	[PIECE_CLIMB] = "°",
 };
 
-void tile_index_to_canonical_pos(unsigned int tile_index, uint8_t n, struct canonical_position_t *canonical_pos) {
+static bool title_index_to_canonical_pos_row(unsigned int tile_index, struct canonical_position_t *canonical_pos, int row_width) {
+	canonical_pos->row_width = row_width;
+	for (int i = 0; i < row_width; i++) {
+		canonical_pos->col_number = i;
+		if (tile_index == canonical_pos->tile_index) {
+			return true;
+		}
+		canonical_pos->tile_index++;
+	}
+	canonical_pos->row_number++;
+	return false;
+}
+
+static void tile_index_to_canonical_pos(unsigned int tile_index, uint8_t n, struct canonical_position_t *canonical_pos) {
 	memset(canonical_pos, 0, sizeof(struct canonical_position_t));
 	canonical_pos->tile_index = 0;
 	canonical_pos->n = n;
+	bool found = false;
 	for (int row_width = canonical_pos->n; row_width < 2 * canonical_pos->n; row_width++) {
-		canonical_pos->row_width = row_width;
-		for (int i = 0; i < row_width; i++) {
-			canonical_pos->col_number = i;
-			if (tile_index == canonical_pos->tile_index) {
-				return;
-			}
-			canonical_pos->tile_index++;
+		found = title_index_to_canonical_pos_row(tile_index, canonical_pos, row_width);
+		if (found) {
+			break;
 		}
-		canonical_pos->row_number++;
 	}
-	for (int row_width = 2 * canonical_pos->n - 2; row_width >= canonical_pos->n; row_width--) {
-		canonical_pos->row_width = row_width;
-		for (int i = 0; i < row_width; i++) {
-			canonical_pos->col_number = i;
-			if (tile_index == canonical_pos->tile_index) {
-				return;
+	if (!found) {
+		for (int row_width = 2 * canonical_pos->n - 2; row_width >= canonical_pos->n; row_width--) {
+			found = title_index_to_canonical_pos_row(tile_index, canonical_pos, row_width);
+			if (found) {
+				break;
 			}
-			canonical_pos->tile_index++;
 		}
-		canonical_pos->row_number++;
+	}
+
+	/* Now complete positional flag computation */
+	if (canonical_pos->row_number == 0) {
+		canonical_pos->loc_flags |= CANONICAL_LOCFLAG_TOP;
+	} else if (canonical_pos->row_number == (2 * n) - 2) {
+		canonical_pos->loc_flags |= CANONICAL_LOCFLAG_BOTTOM;
+	}
+
+	if (canonical_pos->col_number == 0) {
+		canonical_pos->loc_flags |= CANONICAL_LOCFLAG_LEFT;
+	} else if (canonical_pos->col_number == canonical_pos->row_width - 1) {
+		canonical_pos->loc_flags |= CANONICAL_LOCFLAG_RIGHT;
+	}
+
+	if (canonical_pos->row_number < n - 1) {
+		canonical_pos->loc_flags |= CANONICAL_LOCFLAG_NORTH;
+	} else if (canonical_pos->row_number > n - 1) {
+		canonical_pos->loc_flags |= CANONICAL_LOCFLAG_SOUTH;
+	} else {
+		canonical_pos->loc_flags |= CANONICAL_LOCFLAG_EQUATOR;
 	}
 }
 
 void dump_canonical_pos(const struct canonical_position_t *canonical_pos) {
-	printf("%2d: %2d %2d (%d) ", canonical_pos->tile_index, canonical_pos->row_number, canonical_pos->col_number, canonical_pos->row_width);
-//	if (
+	printf("%2d: %2d %2d (%d) ", canonical_pos->tile_index + 1, canonical_pos->row_number, canonical_pos->col_number, canonical_pos->row_width);
+	printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_TOP) ? "T" : "");
+	printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_BOTTOM) ? "B" : "");
+	printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_LEFT) ? "L" : "");
+	printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_RIGHT) ? "R" : "");
+	printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_NORTH) ? "N" : "");
+	printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_EQUATOR) ? "E" : "");
+	printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_SOUTH) ? "S" : "");
 	printf("\n");
 }
 

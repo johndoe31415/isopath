@@ -27,10 +27,20 @@ struct board_t {
  * [...]
  */
 
-#define CANONICAL_POSFLAG_TOP		(1 << 0)
-#define CANONICAL_POSFLAG_LEFT		(1 << 1)
-#define CANONICAL_POSFLAG_RIGHT		(1 << 2)
-#define CANONICAL_POSFLAG_BOTTOM	(1 << 3)
+#define CANONICAL_LOCFLAG_TOP		(1 << 0)
+#define CANONICAL_LOCFLAG_LEFT		(1 << 1)
+#define CANONICAL_LOCFLAG_RIGHT		(1 << 2)
+#define CANONICAL_LOCFLAG_BOTTOM	(1 << 3)
+#define CANONICAL_LOCFLAG_NORTH		(1 << 4)
+#define CANONICAL_LOCFLAG_EQUATOR	(1 << 5)
+#define CANONICAL_LOCFLAG_SOUTH		(1 << 6)
+
+#define ADJACENT_TOP_LEFT			(1 << 0)
+#define ADJACENT_TOP_RIGHT			(1 << 1)
+#define ADJACENT_LEFT				(1 << 2)
+#define ADJACENT_RIGHT				(1 << 3)
+#define ADJACENT_BOTTOM_LEFT		(1 << 4)
+#define ADJACENT_BOTTOM_RIGHT		(1 << 5)
 
 struct canonical_position_t {
 	unsigned int tile_index;
@@ -38,11 +48,10 @@ struct canonical_position_t {
 	unsigned int row_number;
 	unsigned int col_number;
 	unsigned int row_width;
-	uint8_t pos_flags;
+	uint8_t loc_flags, adj_flags;
 };
 
 /*************** AUTO GENERATED SECTION FOLLOWS ***************/
-void tile_index_to_canonical_pos(unsigned int tile_index, uint8_t n, struct canonical_position_t *canonical_pos);
 void dump_canonical_pos(const struct canonical_position_t *canonical_pos);
 void dump_canonical_board(uint8_t n);
 void board_dump(const struct board_t *board);
