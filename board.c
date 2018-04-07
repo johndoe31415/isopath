@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "board.h"
 
 static const char* dump_tile_char[] = {
@@ -31,6 +32,48 @@ static const char* dump_tile_char[] = {
 	[PIECE_TRENCH] = ".",
 	[PIECE_CLIMB] = "°",
 };
+
+void tile_index_to_canonical_pos(unsigned int tile_index, uint8_t n, struct canonical_position_t *canonical_pos) {
+	memset(canonical_pos, 0, sizeof(struct canonical_position_t));
+	canonical_pos->tile_index = 0;
+	canonical_pos->n = n;
+	for (int row_width = canonical_pos->n; row_width < 2 * canonical_pos->n; row_width++) {
+		canonical_pos->row_width = row_width;
+		for (int i = 0; i < row_width; i++) {
+			canonical_pos->col_number = i;
+			if (tile_index == canonical_pos->tile_index) {
+				return;
+			}
+			canonical_pos->tile_index++;
+		}
+		canonical_pos->row_number++;
+	}
+	for (int row_width = 2 * canonical_pos->n - 2; row_width >= canonical_pos->n; row_width--) {
+		canonical_pos->row_width = row_width;
+		for (int i = 0; i < row_width; i++) {
+			canonical_pos->col_number = i;
+			if (tile_index == canonical_pos->tile_index) {
+				return;
+			}
+			canonical_pos->tile_index++;
+		}
+		canonical_pos->row_number++;
+	}
+}
+
+void dump_canonical_pos(const struct canonical_position_t *canonical_pos) {
+	printf("%2d: %2d %2d (%d) ", canonical_pos->tile_index, canonical_pos->row_number, canonical_pos->col_number, canonical_pos->row_width);
+//	if (
+	printf("\n");
+}
+
+void dump_canonical_board(uint8_t n) {
+	for (int i = 0; i < NUMBER_TILES(n); i++) {
+		struct canonical_position_t cpos;
+		tile_index_to_canonical_pos(i, n, &cpos);
+		dump_canonical_pos(&cpos);
+	}
+}
 
 static void row_dump(const struct board_t *board, int tile_index, int row_width) {
 	int missing_chars = (2 * board->n) - 1 - row_width;

@@ -20,10 +20,13 @@
 	Johannes Bauer <JohannesBauer@gmx.de>
 */
 
+#include <stdio.h>
 #include "board.h"
 
 int main(int argc, char **argv) {
 	struct board_t *board = board_init(4);
 	board_dump(board);
+
+	dump_canonical_board(4);
 	return 0;
 }
