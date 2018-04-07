@@ -88,6 +88,37 @@ static void tile_index_to_canonical_pos(unsigned int tile_index, uint8_t n, stru
 	} else {
 		canonical_pos->loc_flags |= CANONICAL_LOCFLAG_EQUATOR;
 	}
+
+	/* Then infer the adjacent pieces */
+	if (canonical_pos->loc_flags & CANONICAL_LOCMASK_BORDER) {
+		/* It's on some border */
+
+		/* Every piece on the left side has a right adjacent tile guaranteed;
+		 * most have upper and lower right (exceptions are subtracted later on)
+		 */
+		if (canonical_pos->loc_flags & CANONICAL_LOCFLAG_LEFT) {
+			canonical_pos->adj_flags |= ADJACENT_RIGHT | ADJACENT_TOP_RIGHT | ADJACENT_BOTTOM_RIGHT;
+		}
+
+		/* Every piece on the right side has a left adjacent tile guaranteed;
+		 * most have upper and lower left (exceptions are subtracted later on)
+		 */
+		if (canonical_pos->loc_flags & CANONICAL_LOCFLAG_RIGHT) {
+			canonical_pos->adj_flags |= ADJACENT_LEFT | ADJACENT_TOP_LEFT | ADJACENT_BOTTOM_LEFT;
+		}
+
+		/* Subtract the exceptions */
+		if (canonical_pos->adj_flags & CANONICAL_LOCFLAG_TOP) {
+			canonical_pos->adj_flags &= ~(ADJACENT_TOP_LEFT | ADJACENT_TOP_RIGHT);
+		}
+		if (canonical_pos->adj_flags & CANONICAL_LOCFLAG_BOTTOM) {
+			canonical_pos->adj_flags &= ~(ADJACENT_BOTTOM_LEFT | ADJACENT_BOTTOM_RIGHT);
+		}
+
+	} else {
+		/* It's an inner piece, all six sides have adjacent tiles */
+		canonical_pos->adj_flags = ADJACENT_MASK_ALL;
+	}
 }
 
 void dump_canonical_pos(const struct canonical_position_t *canonical_pos) {
@@ -99,6 +130,13 @@ void dump_canonical_pos(const struct canonical_position_t *canonical_pos) {
 	printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_NORTH) ? "N" : "");
 	printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_EQUATOR) ? "E" : "");
 	printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_SOUTH) ? "S" : "");
+	printf("   ");
+	printf("%s", (canonical_pos->adj_flags & ADJACENT_TOP_LEFT) ? "1" : " ");
+	printf("%s", (canonical_pos->adj_flags & ADJACENT_TOP_RIGHT) ? "2" : " ");
+	printf("%s", (canonical_pos->adj_flags & ADJACENT_LEFT) ? "3" : " ");
+	printf("%s", (canonical_pos->adj_flags & ADJACENT_RIGHT) ? "4" : " ");
+	printf("%s", (canonical_pos->adj_flags & ADJACENT_BOTTOM_LEFT) ? "5" : " ");
+	printf("%s", (canonical_pos->adj_flags & ADJACENT_BOTTOM_RIGHT) ? "6" : " ");
 	printf("\n");
 }
 
