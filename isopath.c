@@ -24,6 +24,6 @@
 
 int main(int argc, char **argv) {
 	struct board_t *board = board_init(4);
-	board_dump(board, 4);
+	board_dump(board);
 	return 0;
 }

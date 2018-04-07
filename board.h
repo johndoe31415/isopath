@@ -21,7 +21,7 @@ struct board_t {
 };
 
 /*************** AUTO GENERATED SECTION FOLLOWS ***************/
-void board_dump(const struct board_t *board, uint8_t n);
+void board_dump(const struct board_t *board);
 struct board_t *board_init(uint8_t n);
 void board_free(struct board_t *board);
 /***************  AUTO GENERATED SECTION ENDS   ***************/

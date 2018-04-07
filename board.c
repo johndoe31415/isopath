@@ -32,8 +32,8 @@ static const char* dump_tile_char[] = {
 	[PIECE_CLIMB] = "°",
 };
 
-static void row_dump(const struct board_t *board, uint8_t n, int tile_index, int row_width) {
-	int missing_chars = (2 * n) - 1 - row_width;
+static void row_dump(const struct board_t *board, int tile_index, int row_width) {
+	int missing_chars = (2 * board->n) - 1 - row_width;
 	for (int i = 0; i < missing_chars / 2; i++) {
 		printf("   ");
 	}
@@ -48,20 +48,21 @@ static void row_dump(const struct board_t *board, uint8_t n, int tile_index, int
 	printf("\n");
 }
 
-void board_dump(const struct board_t *board, uint8_t n) {
+void board_dump(const struct board_t *board) {
 	int tile_index = 0;
-	for (int row_width = n; row_width < 2 * n; row_width++) {
-		row_dump(board, n, tile_index, row_width);
+	for (int row_width = board->n; row_width < 2 * board->n; row_width++) {
+		row_dump(board, tile_index, row_width);
 		tile_index += row_width;
 	}
-	for (int row_width = 2 * n - 2; row_width >= n; row_width--) {
-		row_dump(board, n, tile_index, row_width);
+	for (int row_width = 2 * board->n - 2; row_width >= board->n; row_width--) {
+		row_dump(board, tile_index, row_width);
 		tile_index += row_width;
 	}
 }
 
 struct board_t *board_init(uint8_t n) {
 	struct board_t *result = calloc(1, BOARD_SIZE_BYTES(n));
+	result->n = n;
 	const unsigned int tile_max_index = NUMBER_TILES(n) - 1;
 	for (int i = 0; i < n; i++) {
 		result->tiles[i] = PIECE_CLIMB;
