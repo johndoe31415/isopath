@@ -48,6 +48,18 @@ static bool title_index_to_canonical_pos_row(unsigned int tile_index, struct can
 	return false;
 }
 
+static int sort_uint(const void *v_uint1ptr, const void *v_uint2ptr) {
+	const unsigned int *uint1 = (const unsigned int*)v_uint1ptr;
+	const unsigned int *uint2 = (const unsigned int*)v_uint2ptr;
+	if (*uint1 < *uint2) {
+		return -1;
+	} else if (*uint1 == *uint2) {
+		return 0;
+	} else {
+		return 1;
+	}
+}
+
 void tile_index_to_canonical_pos(unsigned int tile_index, uint8_t n, struct canonical_position_t *canonical_pos) {
 	memset(canonical_pos, 0, sizeof(struct canonical_position_t));
 	canonical_pos->tile_index = 0;
@@ -89,6 +101,11 @@ void tile_index_to_canonical_pos(unsigned int tile_index, uint8_t n, struct cano
 		canonical_pos->loc_flags |= CANONICAL_LOCFLAG_EQUATOR;
 	}
 
+	/* Determine teleport pieces */
+	if ((canonical_pos->loc_flags & (CANONICAL_LOCFLAG_LEFT | CANONICAL_LOCFLAG_RIGHT)) &&
+		(canonical_pos->loc_flags & (CANONICAL_LOCFLAG_TOP | CANONICAL_LOCFLAG_EQUATOR | CANONICAL_LOCFLAG_BOTTOM))) {
+		canonical_pos->loc_flags |= CANONICAL_LOCFLAG_TELEPORT;
+	}
 
 	/* Then infer the adjacent pieces. Start with a mask that contains all and
 	 * then take away specifics for different pieces. */
@@ -117,24 +134,69 @@ void tile_index_to_canonical_pos(unsigned int tile_index, uint8_t n, struct cano
 	}  else if (canonical_pos->loc_flags & CANONICAL_LOCFLAG_BOTTOM) {
 		canonical_pos->adj_flags &= ~(ADJACENT_BOTTOM_LEFT | ADJACENT_BOTTOM_RIGHT);
 	}
+
+	/* Lastly, determine adjacency array */
+	if (canonical_pos->adj_flags & ADJACENT_TOP_LEFT) {
+		canonical_pos->adjacent_tiles[canonical_pos->adjacent_count++] = canonical_pos->tile_index - canonical_pos->row_width + (canonical_pos->loc_flags & CANONICAL_LOCFLAG_SOUTH ? -1 : 0);
+	}
+	if (canonical_pos->adj_flags & ADJACENT_TOP_RIGHT) {
+		canonical_pos->adjacent_tiles[canonical_pos->adjacent_count++] = canonical_pos->tile_index - canonical_pos->row_width + (canonical_pos->loc_flags & CANONICAL_LOCFLAG_SOUTH ? 0 : 1);
+	}
+	if (canonical_pos->adj_flags & ADJACENT_LEFT) {
+		canonical_pos->adjacent_tiles[canonical_pos->adjacent_count++] = canonical_pos->tile_index - 1;
+	}
+	if (canonical_pos->adj_flags & ADJACENT_RIGHT) {
+		canonical_pos->adjacent_tiles[canonical_pos->adjacent_count++] = canonical_pos->tile_index + 1;
+	}
+	if (canonical_pos->adj_flags & ADJACENT_BOTTOM_LEFT) {
+		canonical_pos->adjacent_tiles[canonical_pos->adjacent_count++] = canonical_pos->tile_index + canonical_pos->row_width + (canonical_pos->loc_flags & CANONICAL_LOCFLAG_NORTH ? 0 : -1);
+	}
+	if (canonical_pos->adj_flags & ADJACENT_BOTTOM_RIGHT) {
+		canonical_pos->adjacent_tiles[canonical_pos->adjacent_count++] = canonical_pos->tile_index + canonical_pos->row_width + (canonical_pos->loc_flags & CANONICAL_LOCFLAG_NORTH ? 1 : 0);
+	}
+	if (canonical_pos->loc_flags & CANONICAL_LOCFLAG_TELEPORT) {
+		if (canonical_pos->loc_flags & CANONICAL_LOCFLAG_LEFT) {
+			canonical_pos->adjacent_tiles[canonical_pos->adjacent_count++] = canonical_pos->tile_index + canonical_pos->row_width - 1;
+		} else {
+			canonical_pos->adjacent_tiles[canonical_pos->adjacent_count++] = canonical_pos->tile_index - canonical_pos->row_width + 1;
+		}
+	}
+
+	/* Because of teleport fields, order of tiles may be messed up. For having
+	 * consistent test cases, sort them. */
+	qsort(canonical_pos->adjacent_tiles, canonical_pos->adjacent_count, sizeof(canonical_pos->adjacent_tiles[0]), sort_uint);
 }
 
 void dump_canonical_pos(const struct canonical_position_t *canonical_pos) {
 	printf("%2d: %2d %2d (%d) ", canonical_pos->tile_index, canonical_pos->row_number, canonical_pos->col_number, canonical_pos->row_width);
-	printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_TOP) ? "T" : "");
-	printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_BOTTOM) ? "B" : "");
-	printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_LEFT) ? "L" : "");
-	printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_RIGHT) ? "R" : "");
-	printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_NORTH) ? "N" : "");
-	printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_EQUATOR) ? "E" : "");
-	printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_SOUTH) ? "S" : "");
+
+	int len = 0;
+	len += printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_TOP) ? "T" : "");
+	len += printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_BOTTOM) ? "B" : "");
+	len += printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_LEFT) ? "L" : "");
+	len += printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_RIGHT) ? "R" : "");
+	len += printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_NORTH) ? "N" : "");
+	len += printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_EQUATOR) ? "E" : "");
+	len += printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_SOUTH) ? "S" : "");
+	len += printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_TELEPORT) ? "*" : "");
+	for (int i = 0; i < 4 - len; i++) {
+		printf(" ");
+	}
 	printf("   ");
+
 	printf("%s", (canonical_pos->adj_flags & ADJACENT_TOP_LEFT) ? "↖ " : "  ");
 	printf("%s", (canonical_pos->adj_flags & ADJACENT_TOP_RIGHT) ? "↗ " : "  ");
 	printf("%s", (canonical_pos->adj_flags & ADJACENT_LEFT) ? "← " : "  ");
 	printf("%s", (canonical_pos->adj_flags & ADJACENT_RIGHT) ? "→ " : "  ");
 	printf("%s", (canonical_pos->adj_flags & ADJACENT_BOTTOM_LEFT) ? "↙ " : "  ");
 	printf("%s", (canonical_pos->adj_flags & ADJACENT_BOTTOM_RIGHT) ? "↘ " : "  ");
+	printf("   ");
+
+	printf(" [ ");
+	for (int i = 0; i < canonical_pos->adjacent_count; i++) {
+		printf("%2u ", canonical_pos->adjacent_tiles[i]);
+	}
+	printf("]");
 	printf("\n");
 }
 
