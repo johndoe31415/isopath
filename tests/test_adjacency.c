@@ -213,6 +213,15 @@ static const struct canonical_position_t expected_pos[] = {
 		.loc_flags = CANONICAL_LOCFLAG_EQUATOR,
 		.adj_flags = ADJACENT_MASK_ALL,
 	},
+	{
+		.tile_index = 21,
+		.n = 4,
+		.row_number = 3,
+		.col_number = 6,
+		.row_width = 7,
+		.loc_flags = CANONICAL_LOCFLAG_EQUATOR | CANONICAL_LOCFLAG_RIGHT,
+		.adj_flags = ADJACENT_TOP_LEFT | ADJACENT_LEFT | ADJACENT_BOTTOM_LEFT,
+	},
 };
 
 
