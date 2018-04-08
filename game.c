@@ -156,8 +156,8 @@ bool is_action_legal(struct game_t *game, const struct action_t *action) {
 }
 
 void game_perform_action(struct game_t *game, const struct action_t *action) {
+	apply_move(game, &action->moves[0]);
 	apply_move(game, &action->moves[1]);
-	apply_move(game, &action->moves[2]);
 	game->side_turn = (game->side_turn == TRENCH) ? CLIMB : TRENCH;
 }
 

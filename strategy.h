@@ -34,6 +34,7 @@ struct strategy_t {
 
 /*************** AUTO GENERATED SECTION FOLLOWS ***************/
 void strategy_perform_move(struct game_t *game, const struct strategy_t *strategy);
+bool strategy_play_out(struct game_t *game, const struct strategy_t *our_strategy, const struct strategy_t *their_strategy);
 /***************  AUTO GENERATED SECTION ENDS   ***************/
 
 #endif

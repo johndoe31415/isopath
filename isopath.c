@@ -33,8 +33,7 @@ int main(int argc, char **argv) {
 		.min_distance_coefficient = 10,
 		.sum_distance_coefficient = 3,
 	};
-	strategy_perform_move(game, &strategy);
-	board_dump(game->board);
+	strategy_play_out(game, &strategy, &strategy);
 	game_free(game);
 	return 0;
 }

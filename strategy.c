@@ -108,14 +108,35 @@ void strategy_perform_move(struct game_t *game, const struct strategy_t *strateg
 
 	float max_goodness = ctx.actions[0].goodness;
 	unsigned int preferred_option = 0;
-	printf("%u options\n", ctx.action_cnt);
+//	printf("%u options\n", ctx.action_cnt);
 	for (int i = 1; i < ctx.action_cnt; i++) {
 		if (ctx.actions[i].goodness > max_goodness) {
 			max_goodness = ctx.actions[i].goodness;
 			preferred_option = i;
 		}
-		printf("option %d: %f\n", i, ctx.actions[i].goodness);
+//		printf("option %d: %f\n", i, ctx.actions[i].goodness);
 	}
-	game_perform_action(game, &ctx.actions[preferred_option]);
+//	dump_action(&ctx.actions[preferred_option]);
+	game_perform_action(game, &ctx.actions[preferred_option].action);
+	board_dump(game->board);
+	printf("\n");
 	free(ctx.actions);
+}
+
+bool strategy_play_out(struct game_t *game, const struct strategy_t *our_strategy, const struct strategy_t *their_strategy) {
+	enum side_t us = game->side_turn;
+	enum side_t them = (us == TRENCH) ? CLIMB : TRENCH;
+	while (true) {
+		/* Our turn */
+		strategy_perform_move(game, our_strategy);
+		if (game_won_by(game, us)) {
+			return true;
+		}
+
+		/* Their turn */
+		strategy_perform_move(game, their_strategy);
+		if (game_won_by(game, them)) {
+			return false;
+		}
+	}
 }
