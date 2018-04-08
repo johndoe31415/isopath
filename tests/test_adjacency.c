@@ -78,6 +78,33 @@ static const struct canonical_position_t expected_pos[] = {
 		.loc_flags = CANONICAL_LOCFLAG_NORTH,
 		.adj_flags = ADJACENT_MASK_ALL,
 	},
+	{
+		.tile_index = 6,
+		.n = 4,
+		.row_number = 1,
+		.col_number = 2,
+		.row_width = 5,
+		.loc_flags = CANONICAL_LOCFLAG_NORTH,
+		.adj_flags = ADJACENT_MASK_ALL,
+	},
+	{
+		.tile_index = 7,
+		.n = 4,
+		.row_number = 1,
+		.col_number = 3,
+		.row_width = 5,
+		.loc_flags = CANONICAL_LOCFLAG_NORTH,
+		.adj_flags = ADJACENT_MASK_ALL,
+	},
+	{
+		.tile_index = 8,
+		.n = 4,
+		.row_number = 1,
+		.col_number = 4,
+		.row_width = 5,
+		.loc_flags = CANONICAL_LOCFLAG_NORTH | CANONICAL_LOCFLAG_RIGHT,
+		.adj_flags = ADJACENT_TOP_LEFT | ADJACENT_LEFT | ADJACENT_BOTTOM_LEFT | ADJACENT_BOTTOM_RIGHT,
+	},
 };
 
 
