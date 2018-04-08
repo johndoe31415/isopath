@@ -89,58 +89,27 @@ void tile_index_to_canonical_pos(unsigned int tile_index, uint8_t n, struct cano
 		canonical_pos->loc_flags |= CANONICAL_LOCFLAG_EQUATOR;
 	}
 
-	/* Then infer the adjacent pieces */
-	if (canonical_pos->loc_flags & CANONICAL_LOCMASK_BORDER) {
-		/* It's on some border */
 
-		/* Every piece on the left side has a right adjacent tile guaranteed;
-		 * most have upper and lower right (exceptions are subtracted later on)
-		 */
-		if (canonical_pos->loc_flags & CANONICAL_LOCFLAG_LEFT) {
-			canonical_pos->adj_flags |= ADJACENT_RIGHT | ADJACENT_TOP_RIGHT | ADJACENT_BOTTOM_RIGHT;
-			if (canonical_pos->loc_flags & CANONICAL_LOCFLAG_NORTH) {
-				canonical_pos->adj_flags |= ADJACENT_BOTTOM_LEFT;
-			} else {
-				canonical_pos->adj_flags |= ADJACENT_BOTTOM_RIGHT;
-			}
-		} else {
-			canonical_pos->adj_flags |= ADJACENT_LEFT;
-		}
+	/* Then infer the adjacent pieces. Start with a mask that contains all and
+	 * then take away specifics for different pieces. */
+	canonical_pos->adj_flags = ADJACENT_MASK_ALL;
 
-		/* Every piece on the right side has a left adjacent tile guaranteed;
-		 * most have upper and lower left (exceptions are subtracted later on)
-		 */
-		if (canonical_pos->loc_flags & CANONICAL_LOCFLAG_RIGHT) {
-			canonical_pos->adj_flags |= ADJACENT_LEFT | ADJACENT_TOP_LEFT | ADJACENT_BOTTOM_LEFT;
-			if (canonical_pos->loc_flags & CANONICAL_LOCFLAG_SOUTH) {
-				canonical_pos->adj_flags |= ADJACENT_TOP_RIGHT;
-			} else {
-				canonical_pos->adj_flags |= ADJACENT_TOP_LEFT;
-			}
-		} else {
-			canonical_pos->adj_flags |= ADJACENT_RIGHT;
+	if (canonical_pos->loc_flags & CANONICAL_LOCFLAG_LEFT) {
+		canonical_pos->adj_flags &= ~ADJACENT_LEFT;
+		if (canonical_pos->loc_flags & CANONICAL_LOCFLAG_NORTH) {
+			canonical_pos->adj_flags &= ~ADJACENT_TOP_LEFT;
 		}
+	} else if (canonical_pos->loc_flags & CANONICAL_LOCFLAG_RIGHT) {
+		canonical_pos->adj_flags &= ~(ADJACENT_RIGHT);
+		if (canonical_pos->loc_flags & (CANONICAL_LOCFLAG_NORTH | CANONICAL_LOCFLAG_EQUATOR)) {
+			canonical_pos->adj_flags &= ~ADJACENT_TOP_RIGHT;
+		}
+	}
 
-		/* Most pieces on the top side have lower tiles (exceptions are
-		 * subtracted later on); likewise most bottom tiles have top adjacent
-		 * tiles.  */
-		if (canonical_pos->loc_flags & CANONICAL_LOCFLAG_TOP) {
-			canonical_pos->adj_flags |= ADJACENT_BOTTOM_LEFT | ADJACENT_BOTTOM_RIGHT;
-		} else if (canonical_pos->loc_flags & CANONICAL_LOCFLAG_BOTTOM) {
-			canonical_pos->adj_flags |= ADJACENT_TOP_LEFT | ADJACENT_TOP_RIGHT;
-		}
-
-		/* Subtract the exceptions */
-		if (canonical_pos->loc_flags & CANONICAL_LOCFLAG_TOP) {
-			canonical_pos->adj_flags &= ~(ADJACENT_TOP_LEFT | ADJACENT_TOP_RIGHT);
-		}
-		if (canonical_pos->loc_flags & CANONICAL_LOCFLAG_BOTTOM) {
-			canonical_pos->adj_flags &= ~(ADJACENT_BOTTOM_LEFT | ADJACENT_BOTTOM_RIGHT);
-		}
-
-	} else {
-		/* It's an inner piece, all six sides have adjacent tiles */
-		canonical_pos->adj_flags = ADJACENT_MASK_ALL;
+	if (canonical_pos->loc_flags & CANONICAL_LOCFLAG_TOP) {
+		canonical_pos->adj_flags &= ~(ADJACENT_TOP_LEFT | ADJACENT_TOP_RIGHT);
+	}  else if (canonical_pos->loc_flags & CANONICAL_LOCFLAG_BOTTOM) {
+		canonical_pos->adj_flags &= ~(ADJACENT_BOTTOM_LEFT | ADJACENT_BOTTOM_RIGHT);
 	}
 }
 
