@@ -96,13 +96,19 @@ void tile_index_to_canonical_pos(unsigned int tile_index, uint8_t n, struct cano
 
 	if (canonical_pos->loc_flags & CANONICAL_LOCFLAG_LEFT) {
 		canonical_pos->adj_flags &= ~ADJACENT_LEFT;
-		if (canonical_pos->loc_flags & CANONICAL_LOCFLAG_NORTH) {
+		if (canonical_pos->loc_flags & (CANONICAL_LOCFLAG_NORTH | CANONICAL_LOCFLAG_EQUATOR)) {
 			canonical_pos->adj_flags &= ~ADJACENT_TOP_LEFT;
 		}
+		if (canonical_pos->loc_flags & (CANONICAL_LOCFLAG_SOUTH | CANONICAL_LOCFLAG_EQUATOR)) {
+			canonical_pos->adj_flags &= ~ADJACENT_BOTTOM_LEFT;
+		}
 	} else if (canonical_pos->loc_flags & CANONICAL_LOCFLAG_RIGHT) {
-		canonical_pos->adj_flags &= ~(ADJACENT_RIGHT);
+		canonical_pos->adj_flags &= ~ADJACENT_RIGHT;
 		if (canonical_pos->loc_flags & (CANONICAL_LOCFLAG_NORTH | CANONICAL_LOCFLAG_EQUATOR)) {
 			canonical_pos->adj_flags &= ~ADJACENT_TOP_RIGHT;
+		}
+		if (canonical_pos->loc_flags & (CANONICAL_LOCFLAG_SOUTH | CANONICAL_LOCFLAG_EQUATOR)) {
+			canonical_pos->adj_flags &= ~ADJACENT_BOTTOM_RIGHT;
 		}
 	}
 
