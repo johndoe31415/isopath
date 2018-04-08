@@ -27,6 +27,16 @@
 #include <string.h>
 #include "game.h"
 
+struct first_move_ctx {
+	void (*action_callback)(struct game_t *game, const struct action_t *action, void *vctx);
+	void *action_ctx;
+};
+
+struct second_move_ctx {
+	struct action_t action;
+	struct first_move_ctx *first;
+};
+
 static bool are_tiles_adjacent(const struct game_t *game, unsigned int index1, unsigned int index2) {
 	for (int i = 0; i < game->canpos[index1].adjacent_count; i++) {
 		if (game->canpos[index1].adjacent_tiles[i] == index2) {
@@ -145,12 +155,13 @@ bool is_action_legal(struct game_t *game, const struct action_t *action) {
 	return is_legal;
 }
 
-void perform_action(struct game_t *game, const struct action_t *action) {
+void game_perform_action(struct game_t *game, const struct action_t *action) {
 	apply_move(game, &action->moves[1]);
 	apply_move(game, &action->moves[2]);
+	game->side_turn = (game->side_turn == TRENCH) ? CLIMB : TRENCH;
 }
 
-void enumerate_valid_moves(struct game_t *game, bool allow_capture, bool allow_build, bool allow_move, void (*enumeration_callback)(struct game_t *game, const struct move_t *move, void *ctx), void *ctx) {
+static void enumerate_valid_moves(struct game_t *game, bool allow_capture, bool allow_build, bool allow_move, void (*enumeration_callback)(struct game_t *game, const struct move_t *move, void *ctx), void *ctx) {
 	/* First determine if there's pieces that can be captured */
 	if (allow_capture) {
 		uint8_t enemy_piece = (game->side_turn == TRENCH) ? PIECE_CLIMB : PIECE_TRENCH;
@@ -210,22 +221,11 @@ void enumerate_valid_moves(struct game_t *game, bool allow_capture, bool allow_b
 	}
 }
 
-struct first_move_ctx {
-	void (*action_callback)(struct game_t *game, const struct action_t *action, void *vctx);
-	void *action_ctx;
-};
-
-struct second_move_ctx {
-	struct action_t action;
-	struct first_move_ctx *first;
-};
-
 static void second_move_callback(struct game_t *game, const struct move_t *move, void *vctx) {
 	struct second_move_ctx *ctx = (struct second_move_ctx*)vctx;
 	ctx->action.moves[1] = *move;
 	apply_move(game, move);
-	board_dump(game->board);
-	printf("\n\n\n");
+	ctx->first->action_callback(game, &ctx->action, ctx->first->action_ctx);
 	revert_move(game, move);
 }
 
@@ -257,8 +257,25 @@ void enumerate_valid_actions(struct game_t *game, void (*enumeration_callback)(s
 	enumerate_valid_moves(game, true, true, false, first_move_callback, &ctx);
 }
 
-//void generate_random_move(struct game_t *game, struct action_t *action) {
-//}
+bool game_won_by(struct game_t *game, enum side_t player) {
+	uint8_t enemy_piece = (player == TRENCH) ? PIECE_CLIMB : PIECE_TRENCH;
+	uint8_t player_piece = (player == TRENCH) ? PIECE_TRENCH : PIECE_CLIMB;
+	uint8_t enemy_base = (player == TRENCH) ? CANONICAL_LOCFLAG_CLIMB_BASE : CANONICAL_LOCFLAG_TRENCH_BASE;
+	unsigned int enemy_count = 0;
+	for (int i = 0; i < NUMBER_TILES(game->n); i++) {
+		if (game->board->tiles[i] == player_piece) {
+			if (game->canpos[i].loc_flags & enemy_base) {
+				/* First winning condition: Our piece in the enemy base */
+				return true;
+			}
+		} else if (game->board->tiles[i] == enemy_piece) {
+			enemy_count++;
+		}
+	}
+
+	/* Second possible winning condition: All enemies captured */
+	return enemy_count == 0;
+}
 
 struct game_t* game_init(uint8_t n) {
 	struct game_t *result = calloc(1, sizeof(struct game_t));

@@ -28,9 +28,9 @@
 #include "board.h"
 
 static const char* dump_tile_char[] = {
-	[EMPTY_NEUTRAL] = "…  ",
-	[EMPTY_TRENCH] = "_  ",
-	[EMPTY_CLIMB] = "¯  ",
+	[EMPTY_NEUTRAL] = "−  ",
+	[EMPTY_TRENCH] = "∨ ",
+	[EMPTY_CLIMB] = "∧ ",
 	[PIECE_TRENCH] = "⚪ ",
 	[PIECE_CLIMB] = "⚫ ",
 };

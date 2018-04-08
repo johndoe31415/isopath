@@ -22,11 +22,19 @@
 
 #include <stdio.h>
 #include "game.h"
+#include "strategy.h"
 
 int main(int argc, char **argv) {
 	struct game_t *game = game_init(4);
 	board_dump(game->board);
-	enumerate_valid_actions(game, NULL, NULL);
+	struct strategy_t strategy = {
+		.winning_coefficient = 1000,
+		.threat_coefficient = 100,
+		.min_distance_coefficient = 10,
+		.sum_distance_coefficient = 3,
+	};
+	strategy_perform_move(game, &strategy);
+	board_dump(game->board);
 	game_free(game);
 	return 0;
 }
