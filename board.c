@@ -31,8 +31,8 @@ static const char* dump_tile_char[] = {
 	[EMPTY_NEUTRAL] = "…  ",
 	[EMPTY_TRENCH] = "_  ",
 	[EMPTY_CLIMB] = "¯  ",
-	[PIECE_TRENCH] = "⚫ ",
-	[PIECE_CLIMB] = "⚪ ",
+	[PIECE_TRENCH] = "⚪ ",
+	[PIECE_CLIMB] = "⚫ ",
 };
 
 static bool title_index_to_canonical_pos_row(unsigned int tile_index, struct canonical_position_t *canonical_pos, int row_width) {
@@ -239,6 +239,7 @@ void board_dump(const struct board_t *board) {
 struct board_t *board_init(uint8_t n) {
 	struct board_t *result = calloc(1, BOARD_SIZE_BYTES(n));
 	result->n = n;
+	memset(result->tiles, EMPTY_NEUTRAL, NUMBER_TILES(n));
 	const unsigned int tile_max_index = NUMBER_TILES(n) - 1;
 	for (int i = 0; i < n; i++) {
 		result->tiles[i] = PIECE_CLIMB;

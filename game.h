@@ -58,6 +58,8 @@ struct game_t {
 /*************** AUTO GENERATED SECTION FOLLOWS ***************/
 bool is_action_legal(struct game_t *game, const struct action_t *action);
 void perform_action(struct game_t *game, const struct action_t *action);
+void enumerate_valid_moves(struct game_t *game, bool allow_capture, bool allow_build, bool allow_move, void (*enumeration_callback)(struct game_t *game, const struct move_t *move, void *ctx), void *ctx);
+void enumerate_valid_actions(struct game_t *game, void (*enumeration_callback)(struct game_t *game, const struct action_t *action, void *ctx), void *ctx);
 struct game_t* game_init(uint8_t n);
 void game_free(struct game_t *game);
 /***************  AUTO GENERATED SECTION ENDS   ***************/

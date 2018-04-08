@@ -20,9 +20,11 @@
  *	Johannes Bauer <JohannesBauer@gmx.de>
 **/
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 #include "game.h"
 
 static bool are_tiles_adjacent(const struct game_t *game, unsigned int index1, unsigned int index2) {
@@ -66,6 +68,22 @@ static void apply_move(struct game_t *game, const struct move_t *move) {
 	}
 }
 
+static bool tile_surrounded(const struct game_t *game, unsigned int index, uint8_t by_tile) {
+	/* Now look at all adjacent tiles and see if there's a player on there.
+	 * We need at least two.  */
+	int surrounded_by = 0;
+	for (int i = 0; i < game->canpos[index].adjacent_count; i++) {
+		unsigned int adjacent_tile_index = game->canpos[index].adjacent_tiles[i];
+		if (game->board->tiles[adjacent_tile_index] == by_tile) {
+			surrounded_by++;
+			if (surrounded_by == 2) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 static bool is_move_legal(struct game_t *game, const struct move_t *move) {
 	struct board_t *board = game->board;
 	enum side_t player = game->side_turn;
@@ -106,18 +124,8 @@ static bool is_move_legal(struct game_t *game, const struct move_t *move) {
 		}
 
 		/* Now look at all adjacent tiles and see if there's a player on there.
-		 * We need at least two.  */
-		int surrounded_by = 0;
-		for (int i = 0; i < game->canpos[move->dst_tile].adjacent_count; i++) {
-			unsigned int adjacent_tile_index = game->canpos[move->dst_tile].adjacent_tiles[i];
-			if (board->tiles[adjacent_tile_index] == player_piece) {
-				surrounded_by++;
-				if (surrounded_by == 2) {
-					break;
-				}
-			}
-		}
-		if (surrounded_by < 2) {
+		 * We need at least two. */
+		if (!tile_surrounded(game, move->dst_tile, player_piece)) {
 			/* Cannot capture, not surrounded by enough player pieces */
 			return false;
 		}
@@ -126,7 +134,6 @@ static bool is_move_legal(struct game_t *game, const struct move_t *move) {
 	}
 	return true;
 }
-
 
 bool is_action_legal(struct game_t *game, const struct action_t *action) {
 	bool is_legal = is_move_legal(game, &action->moves[0]);
@@ -143,11 +150,122 @@ void perform_action(struct game_t *game, const struct action_t *action) {
 	apply_move(game, &action->moves[2]);
 }
 
+void enumerate_valid_moves(struct game_t *game, bool allow_capture, bool allow_build, bool allow_move, void (*enumeration_callback)(struct game_t *game, const struct move_t *move, void *ctx), void *ctx) {
+	/* First determine if there's pieces that can be captured */
+	if (allow_capture) {
+		uint8_t enemy_piece = (game->side_turn == TRENCH) ? PIECE_CLIMB : PIECE_TRENCH;
+		uint8_t player_piece = (game->side_turn == TRENCH) ? PIECE_TRENCH : PIECE_CLIMB;
+		for (int i = 0; i < NUMBER_TILES(game->n); i++) {
+			if ((game->board->tiles[i] == enemy_piece) && tile_surrounded(game, i, player_piece)) {
+				/* Yes! Capture is possible. */
+				struct move_t move = {
+					.type = CAPTURE,
+					.dst_tile = i,
+				};
+				enumeration_callback(game, &move, ctx);
+			}
+		}
+	}
+
+	/* Then enumerate all build moves */
+	if (allow_build) {
+		for (int src = 0; src < NUMBER_TILES(game->n); src++) {
+			if ((game->board->tiles[src] == EMPTY_NEUTRAL) || (game->board->tiles[src] == EMPTY_CLIMB)) {
+				for (int dst = 0; dst < NUMBER_TILES(game->n); dst++) {
+					if (((game->board->tiles[dst] == EMPTY_NEUTRAL) || (game->board->tiles[dst] == EMPTY_TRENCH)) && (src != dst)) {
+						/* Have a valid build move. */
+						struct move_t move = {
+							.type = BUILD,
+							.src_tile = src,
+							.dst_tile = dst,
+						};
+						enumeration_callback(game, &move, ctx);
+					}
+				}
+			}
+		}
+	}
+
+	/* Finally, enumerate all legal movement moves */
+	// TODO: Not in home base!
+	if (allow_move) {
+		uint8_t player_piece = (game->side_turn == TRENCH) ? PIECE_TRENCH : PIECE_CLIMB;
+		uint8_t player_empty_piece = (game->side_turn == TRENCH) ? EMPTY_TRENCH : EMPTY_CLIMB;
+		for (int src = 0; src < NUMBER_TILES(game->n); src++) {
+			if (game->board->tiles[src] == player_piece) {
+				for (int i = 0; i < game->canpos[src].adjacent_count; i++) {
+					unsigned int adjacent_tile_index = game->canpos[src].adjacent_tiles[i];
+					if (game->board->tiles[adjacent_tile_index] == player_empty_piece) {
+						/* Found a valid movement move. */
+						struct move_t move = {
+							.type = MOVE,
+							.src_tile = src,
+							.dst_tile = adjacent_tile_index,
+						};
+						enumeration_callback(game, &move, ctx);
+					}
+				}
+			}
+		}
+	}
+}
+
+struct first_move_ctx {
+	void (*action_callback)(struct game_t *game, const struct action_t *action, void *vctx);
+	void *action_ctx;
+};
+
+struct second_move_ctx {
+	struct action_t action;
+	struct first_move_ctx *first;
+};
+
+static void second_move_callback(struct game_t *game, const struct move_t *move, void *vctx) {
+	struct second_move_ctx *ctx = (struct second_move_ctx*)vctx;
+	ctx->action.moves[1] = *move;
+	apply_move(game, move);
+	board_dump(game->board);
+	printf("\n\n\n");
+	revert_move(game, move);
+}
+
+static void first_move_callback(struct game_t *game, const struct move_t *move, void *vctx) {
+	struct first_move_ctx *ctx = (struct first_move_ctx*)vctx;
+
+	/* We have just enumerated all possible first moves */
+	struct second_move_ctx second_ctx = {
+		.first = ctx,
+	};
+	second_ctx.action.moves[0] = *move;
+	apply_move(game, move);
+	if (move->type == BUILD) {
+		/* If first was a build move, second must be movement move. */
+		enumerate_valid_moves(game, false, false, true, second_move_callback, &second_ctx);
+	} else if (move->type == CAPTURE) {
+		/* If first was a build move, second can be either build or movement
+		 * move. */
+		enumerate_valid_moves(game, false, true, true, second_move_callback, &second_ctx);
+	}
+	revert_move(game, move);
+}
+
+void enumerate_valid_actions(struct game_t *game, void (*enumeration_callback)(struct game_t *game, const struct action_t *action, void *vctx), void *vctx) {
+	struct first_move_ctx ctx = {
+		.action_callback = enumeration_callback,
+		.action_ctx = vctx,
+	};
+	enumerate_valid_moves(game, true, true, false, first_move_callback, &ctx);
+}
+
+//void generate_random_move(struct game_t *game, struct action_t *action) {
+//}
+
 struct game_t* game_init(uint8_t n) {
 	struct game_t *result = calloc(1, sizeof(struct game_t));
 	if (!result) {
 		return NULL;
 	}
+	result->n = n;
 	result->canpos = malloc(sizeof(struct canonical_position_t) * NUMBER_TILES(n));
 	if (!result->canpos) {
 		free(result);

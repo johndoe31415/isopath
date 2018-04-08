@@ -25,6 +25,8 @@
 
 int main(int argc, char **argv) {
 	struct game_t *game = game_init(4);
+	board_dump(game->board);
+	enumerate_valid_actions(game, NULL, NULL);
 	game_free(game);
 	return 0;
 }
