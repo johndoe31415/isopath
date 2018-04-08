@@ -1,4 +1,5 @@
 # isopath
+[![Build Status](https://travis-ci.org/johndoe31415/isopath.svg?branch=master)](https://travis-ci.org/johndoe31415/isopath)
 This is a small toy playground for the [Iso-path game developed by
 pocket83](https://www.youtube.com/watch?v=Wz6q03b8R6U). I'm trying to
 numerically analyse the game and play around with efficient solvers. It is a
