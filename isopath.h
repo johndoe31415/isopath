@@ -20,13 +20,10 @@
  *	Johannes Bauer <JohannesBauer@gmx.de>
 **/
 
-#include <stdio.h>
-#include "board.h"
+#ifndef __ISOPATH_H__
+#define __ISOPATH_H__
 
-int main(int argc, char **argv) {
-	struct board_t *board = board_init(4);
-	board_dump(board);
+/*************** AUTO GENERATED SECTION FOLLOWS ***************/
+/***************  AUTO GENERATED SECTION ENDS   ***************/
 
-	dump_canonical_board(4);
-	return 0;
-}
+#endif
