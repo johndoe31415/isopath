@@ -28,11 +28,11 @@
 #include "board.h"
 
 static const char* dump_tile_char[] = {
-	[EMPTY_NEUTRAL] = "-",
-	[EMPTY_TRENCH] = "_",
-	[EMPTY_CLIMB] = "^",
-	[PIECE_TRENCH] = ".",
-	[PIECE_CLIMB] = "°",
+	[EMPTY_NEUTRAL] = "…  ",
+	[EMPTY_TRENCH] = "_  ",
+	[EMPTY_CLIMB] = "¯  ",
+	[PIECE_TRENCH] = "⚫ ",
+	[PIECE_CLIMB] = "⚪ ",
 };
 
 static bool title_index_to_canonical_pos_row(unsigned int tile_index, struct canonical_position_t *canonical_pos, int row_width) {
@@ -131,12 +131,12 @@ void dump_canonical_pos(const struct canonical_position_t *canonical_pos) {
 	printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_EQUATOR) ? "E" : "");
 	printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_SOUTH) ? "S" : "");
 	printf("   ");
-	printf("%s", (canonical_pos->adj_flags & ADJACENT_TOP_LEFT) ? "1" : " ");
-	printf("%s", (canonical_pos->adj_flags & ADJACENT_TOP_RIGHT) ? "2" : " ");
-	printf("%s", (canonical_pos->adj_flags & ADJACENT_LEFT) ? "3" : " ");
-	printf("%s", (canonical_pos->adj_flags & ADJACENT_RIGHT) ? "4" : " ");
-	printf("%s", (canonical_pos->adj_flags & ADJACENT_BOTTOM_LEFT) ? "5" : " ");
-	printf("%s", (canonical_pos->adj_flags & ADJACENT_BOTTOM_RIGHT) ? "6" : " ");
+	printf("%s", (canonical_pos->adj_flags & ADJACENT_TOP_LEFT) ? "↖ " : "  ");
+	printf("%s", (canonical_pos->adj_flags & ADJACENT_TOP_RIGHT) ? "↗ " : "  ");
+	printf("%s", (canonical_pos->adj_flags & ADJACENT_LEFT) ? "← " : "  ");
+	printf("%s", (canonical_pos->adj_flags & ADJACENT_RIGHT) ? "→ " : "  ");
+	printf("%s", (canonical_pos->adj_flags & ADJACENT_BOTTOM_LEFT) ? "↙ " : "  ");
+	printf("%s", (canonical_pos->adj_flags & ADJACENT_BOTTOM_RIGHT) ? "↘ " : "  ");
 	printf("\n");
 }
 
@@ -159,7 +159,7 @@ static void row_dump(const struct board_t *board, int tile_index, int row_width)
 	for (int i = 0; i < row_width; i++) {
 		uint8_t tile = board->tiles[tile_index + i];
 		const char *tile_char = dump_tile_char[tile];
-		printf("%s  ", tile_char);
+		printf("%s", tile_char);
 	}
 	printf("\n");
 }
