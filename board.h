@@ -26,9 +26,9 @@
 #include <stdint.h>
 
 enum tile_state_t {
-	EMPTY_NEUTRAL,
-	EMPTY_TRENCH,
-	EMPTY_CLIMB,
+	EMPTY_TRENCH = 0,
+	EMPTY_NEUTRAL = 1,
+	EMPTY_CLIMB = 2,
 	PIECE_TRENCH,
 	PIECE_CLIMB,
 };

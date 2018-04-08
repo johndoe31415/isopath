@@ -57,7 +57,7 @@ struct game_t {
 
 /*************** AUTO GENERATED SECTION FOLLOWS ***************/
 bool is_action_legal(struct game_t *game, const struct action_t *action);
-void perform_action(struct game_t *game, const struct action_t *action);
+bool perform_action(struct game_t *game, const struct action_t *action);
 struct game_t* game_init(uint8_t n);
 void game_free(struct game_t *game);
 /***************  AUTO GENERATED SECTION ENDS   ***************/

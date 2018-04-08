@@ -25,7 +25,7 @@
 #include <stdbool.h>
 #include "game.h"
 
-static bool are_tile_adjacent(const struct game_t *game, unsigned int index1, unsigned int index2) {
+static bool are_tiles_adjacent(const struct game_t *game, unsigned int index1, unsigned int index2) {
 	for (int i = 0; i < game->canpos[index1].adjacent_count; i++) {
 		if (game->canpos[index1].adjacent_tiles[i] == index2) {
 			return true;
@@ -34,15 +34,81 @@ static bool are_tile_adjacent(const struct game_t *game, unsigned int index1, un
 	return false;
 }
 
-static bool apply_move(struct board_t *board, const struct move_t *move) {
-	return false;
+static bool apply_move(struct game_t *game, const struct move_t *move, enum side_t player) {
+	struct board_t *board = game->board;
+	if (move->type == BUILD) {
+		if ((board->tiles[move->src_tile] != EMPTY_NEUTRAL) && (board->tiles[move->src_tile] != EMPTY_CLIMB)) {
+			/* Can only move when there's something there (without a piece on
+			 * it) */
+			return false;
+		}
+		if ((board->tiles[move->dst_tile] != EMPTY_TRENCH) && (board->tiles[move->src_tile] != EMPTY_NEUTRAL)) {
+			/* Can only move to a tile where's either nothing or neutral (and
+			 * no piece on it).  */
+			return false;
+		}
+
+		/* Perform move! */
+		board->tiles[move->src_tile]--;
+		board->tiles[move->dst_tile]++;
+	} else if (move->type == MOVE) {
+		uint8_t player_piece = (player == TRENCH) ? PIECE_TRENCH : PIECE_CLIMB;
+		uint8_t empty_piece = (player == TRENCH) ? EMPTY_TRENCH : EMPTY_CLIMB;
+		if (board->tiles[move->src_tile] != player_piece) {
+			/* Player not allowed to move this (either not own piece or no
+			 * piece on source tile) */
+			return false;
+		}
+		if (board->tiles[move->dst_tile] != empty_piece) {
+			/* Player not allowed to move to here (either not right elecation
+			 * or already piece on that tile) */
+			return false;
+		}
+		if (!are_tiles_adjacent(game, move->src_tile, move->dst_tile)) {
+			/* Can only move between adjacent tiles */
+			return false;
+		}
+		board->tiles[move->dst_tile] = player_piece;
+		board->tiles[move->src_tile] = empty_piece;
+	} else if (move->type == CAPTURE) {
+		uint8_t enemy_piece = (player == TRENCH) ? PIECE_CLIMB : PIECE_TRENCH;
+		uint8_t player_piece = (player == TRENCH) ? PIECE_TRENCH : PIECE_CLIMB;
+		uint8_t empty_enemy_piece = (player == TRENCH) ? EMPTY_CLIMB : EMPTY_TRENCH;
+		if (board->tiles[move->dst_tile] != enemy_piece) {
+			/* There's no enemy on the piece we're trying to capture */
+			return false;
+		}
+
+		/* Now look at all adjacent tiles and see if there's a player on there.
+		 * We need at least two.  */
+		int surrounded_by = 0;
+		for (int i = 0; i < game->canpos[move->dst_tile].adjacent_count; i++) {
+			unsigned int adjacent_tile_index = game->canpos[move->dst_tile].adjacent_tiles[i];
+			if (board->tiles[adjacent_tile_index] == player_piece) {
+				surrounded_by++;
+				if (surrounded_by == 2) {
+					break;
+				}
+			}
+		}
+		if (surrounded_by < 2) {
+			/* Cannot capture, not surrounded by enough player pieces */
+			return false;
+		}
+
+		/* Everything set, capture! */
+		board->tiles[move->dst_tile] = empty_enemy_piece;
+	} else {
+		return false;
+	}
+	return true;
 }
 
 bool is_action_legal(struct game_t *game, const struct action_t *action) {
 	return true;
 }
 
-void perform_action(struct game_t *game, const struct action_t *action) {
+bool perform_action(struct game_t *game, const struct action_t *action) {
 }
 
 struct game_t* game_init(uint8_t n) {
@@ -64,6 +130,7 @@ struct game_t* game_init(uint8_t n) {
 	for (int i = 0; i < NUMBER_TILES(n); i++) {
 		tile_index_to_canonical_pos(i, n, &result->canpos[i]);
 	}
+	result->side_turn = CLIMB;
 	return result;
 }
 
