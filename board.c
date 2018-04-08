@@ -247,6 +247,12 @@ struct board_t *board_init(uint8_t n) {
 	return result;
 }
 
+struct board_t *board_clone(const struct board_t *source) {
+	struct board_t *result = malloc(BOARD_SIZE_BYTES(source->n));
+	memcpy(result, source, BOARD_SIZE_BYTES(source->n));
+	return result;
+}
+
 void board_free(struct board_t *board) {
 	free(board);
 }

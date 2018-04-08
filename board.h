@@ -84,6 +84,7 @@ void dump_canonical_pos(const struct canonical_position_t *canonical_pos);
 void dump_canonical_board(uint8_t n);
 void board_dump(const struct board_t *board);
 struct board_t *board_init(uint8_t n);
+struct board_t *board_clone(const struct board_t *source);
 void board_free(struct board_t *board);
 /***************  AUTO GENERATED SECTION ENDS   ***************/
 
