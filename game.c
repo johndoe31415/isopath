@@ -34,8 +34,41 @@ static bool are_tiles_adjacent(const struct game_t *game, unsigned int index1, u
 	return false;
 }
 
-static bool apply_move(struct game_t *game, const struct move_t *move, enum side_t player) {
+static void revert_move(struct game_t *game, const struct move_t *move) {
 	struct board_t *board = game->board;
+	if (move->type == BUILD) {
+		board->tiles[move->src_tile]++;
+		board->tiles[move->dst_tile]--;
+	} else if (move->type == MOVE) {
+		uint8_t player_piece = (game->side_turn == TRENCH) ? PIECE_TRENCH : PIECE_CLIMB;
+		uint8_t empty_piece = (game->side_turn == TRENCH) ? EMPTY_TRENCH : EMPTY_CLIMB;
+		board->tiles[move->dst_tile] = empty_piece;
+		board->tiles[move->src_tile] = player_piece;
+	} else if (move->type == CAPTURE) {
+		uint8_t enemy_piece = (game->side_turn == TRENCH) ? PIECE_CLIMB : PIECE_TRENCH;
+		board->tiles[move->dst_tile] = enemy_piece;
+	}
+}
+
+static void apply_move(struct game_t *game, const struct move_t *move) {
+	struct board_t *board = game->board;
+	if (move->type == BUILD) {
+		board->tiles[move->src_tile]--;
+		board->tiles[move->dst_tile]++;
+	} else if (move->type == MOVE) {
+		uint8_t player_piece = (game->side_turn == TRENCH) ? PIECE_TRENCH : PIECE_CLIMB;
+		uint8_t empty_piece = (game->side_turn == TRENCH) ? EMPTY_TRENCH : EMPTY_CLIMB;
+		board->tiles[move->dst_tile] = player_piece;
+		board->tiles[move->src_tile] = empty_piece;
+	} else if (move->type == CAPTURE) {
+		uint8_t empty_enemy_piece = (game->side_turn == TRENCH) ? EMPTY_CLIMB : EMPTY_TRENCH;
+		board->tiles[move->dst_tile] = empty_enemy_piece;
+	}
+}
+
+static bool is_move_legal(struct game_t *game, const struct move_t *move) {
+	struct board_t *board = game->board;
+	enum side_t player = game->side_turn;
 	if (move->type == BUILD) {
 		if ((board->tiles[move->src_tile] != EMPTY_NEUTRAL) && (board->tiles[move->src_tile] != EMPTY_CLIMB)) {
 			/* Can only move when there's something there (without a piece on
@@ -47,10 +80,6 @@ static bool apply_move(struct game_t *game, const struct move_t *move, enum side
 			 * no piece on it).  */
 			return false;
 		}
-
-		/* Perform move! */
-		board->tiles[move->src_tile]--;
-		board->tiles[move->dst_tile]++;
 	} else if (move->type == MOVE) {
 		uint8_t player_piece = (player == TRENCH) ? PIECE_TRENCH : PIECE_CLIMB;
 		uint8_t empty_piece = (player == TRENCH) ? EMPTY_TRENCH : EMPTY_CLIMB;
@@ -68,12 +97,9 @@ static bool apply_move(struct game_t *game, const struct move_t *move, enum side
 			/* Can only move between adjacent tiles */
 			return false;
 		}
-		board->tiles[move->dst_tile] = player_piece;
-		board->tiles[move->src_tile] = empty_piece;
 	} else if (move->type == CAPTURE) {
 		uint8_t enemy_piece = (player == TRENCH) ? PIECE_CLIMB : PIECE_TRENCH;
 		uint8_t player_piece = (player == TRENCH) ? PIECE_TRENCH : PIECE_CLIMB;
-		uint8_t empty_enemy_piece = (player == TRENCH) ? EMPTY_CLIMB : EMPTY_TRENCH;
 		if (board->tiles[move->dst_tile] != enemy_piece) {
 			/* There's no enemy on the piece we're trying to capture */
 			return false;
@@ -95,20 +121,26 @@ static bool apply_move(struct game_t *game, const struct move_t *move, enum side
 			/* Cannot capture, not surrounded by enough player pieces */
 			return false;
 		}
-
-		/* Everything set, capture! */
-		board->tiles[move->dst_tile] = empty_enemy_piece;
 	} else {
 		return false;
 	}
 	return true;
 }
 
+
 bool is_action_legal(struct game_t *game, const struct action_t *action) {
-	return true;
+	bool is_legal = is_move_legal(game, &action->moves[0]);
+	if (is_legal) {
+		apply_move(game, &action->moves[0]);
+		is_legal = is_move_legal(game, &action->moves[1]);
+		revert_move(game, &action->moves[0]);
+	}
+	return is_legal;
 }
 
-bool perform_action(struct game_t *game, const struct action_t *action) {
+void perform_action(struct game_t *game, const struct action_t *action) {
+	apply_move(game, &action->moves[1]);
+	apply_move(game, &action->moves[2]);
 }
 
 struct game_t* game_init(uint8_t n) {
