@@ -76,6 +76,7 @@ struct canonical_position_t {
 };
 
 /*************** AUTO GENERATED SECTION FOLLOWS ***************/
+void tile_index_to_canonical_pos(unsigned int tile_index, uint8_t n, struct canonical_position_t *canonical_pos);
 void dump_canonical_pos(const struct canonical_position_t *canonical_pos);
 void dump_canonical_board(uint8_t n);
 void board_dump(const struct board_t *board);

@@ -1,4 +1,4 @@
-.PHONY: all clean test
+.PHONY: all clean test tests
 
 CFLAGS := $(CFLAGS) -std=c11
 CFLAGS += -Wall -Wmissing-prototypes -Wstrict-prototypes -Werror=implicit-function-declaration -Werror=format -Wimplicit-fallthrough -Wshadow
@@ -11,6 +11,9 @@ all: isopath
 
 test: all
 	./isopath
+
+tests:
+	make -C tests test
 
 clean:
 	rm -f $(OBJS) isopath

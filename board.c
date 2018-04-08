@@ -48,7 +48,7 @@ static bool title_index_to_canonical_pos_row(unsigned int tile_index, struct can
 	return false;
 }
 
-static void tile_index_to_canonical_pos(unsigned int tile_index, uint8_t n, struct canonical_position_t *canonical_pos) {
+void tile_index_to_canonical_pos(unsigned int tile_index, uint8_t n, struct canonical_position_t *canonical_pos) {
 	memset(canonical_pos, 0, sizeof(struct canonical_position_t));
 	canonical_pos->tile_index = 0;
 	canonical_pos->n = n;
