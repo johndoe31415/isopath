@@ -73,6 +73,8 @@ struct canonical_position_t {
 	unsigned int col_number;
 	unsigned int row_width;
 	uint8_t loc_flags, adj_flags;
+	uint8_t adjacent_count;
+	unsigned int adjacent_tiles[6];
 };
 
 /*************** AUTO GENERATED SECTION FOLLOWS ***************/

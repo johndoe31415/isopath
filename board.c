@@ -120,7 +120,7 @@ void tile_index_to_canonical_pos(unsigned int tile_index, uint8_t n, struct cano
 }
 
 void dump_canonical_pos(const struct canonical_position_t *canonical_pos) {
-	printf("%2d: %2d %2d (%d) ", canonical_pos->tile_index + 1, canonical_pos->row_number, canonical_pos->col_number, canonical_pos->row_width);
+	printf("%2d: %2d %2d (%d) ", canonical_pos->tile_index, canonical_pos->row_number, canonical_pos->col_number, canonical_pos->row_width);
 	printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_TOP) ? "T" : "");
 	printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_BOTTOM) ? "B" : "");
 	printf("%s", (canonical_pos->loc_flags & CANONICAL_LOCFLAG_LEFT) ? "L" : "");

@@ -32,6 +32,8 @@ static const struct canonical_position_t expected_pos[] = {
 		.row_width = 4,
 		.loc_flags = CANONICAL_LOCFLAG_NORTH | CANONICAL_LOCFLAG_TOP | CANONICAL_LOCFLAG_LEFT,
 		.adj_flags = ADJACENT_BOTTOM_LEFT | ADJACENT_BOTTOM_RIGHT | ADJACENT_RIGHT,
+		.adjacent_count = 4,
+		.adjacent_tiles = { 1, 3, 4, 5 },
 	},
 	{
 		.tile_index = 1,
@@ -41,6 +43,8 @@ static const struct canonical_position_t expected_pos[] = {
 		.row_width = 4,
 		.loc_flags = CANONICAL_LOCFLAG_NORTH | CANONICAL_LOCFLAG_TOP,
 		.adj_flags = ADJACENT_BOTTOM_LEFT | ADJACENT_BOTTOM_RIGHT | ADJACENT_LEFT | ADJACENT_RIGHT,
+		.adjacent_count = 4,
+		.adjacent_tiles = { 0, 2, 5, 6 },
 	},
 	{
 		.tile_index = 2,
@@ -50,6 +54,8 @@ static const struct canonical_position_t expected_pos[] = {
 		.row_width = 4,
 		.loc_flags = CANONICAL_LOCFLAG_NORTH | CANONICAL_LOCFLAG_TOP,
 		.adj_flags = ADJACENT_BOTTOM_LEFT | ADJACENT_BOTTOM_RIGHT | ADJACENT_LEFT | ADJACENT_RIGHT,
+		.adjacent_count = 4,
+		.adjacent_tiles = { 1, 3, 6, 7 },
 	},
 	{
 		.tile_index = 3,
@@ -59,6 +65,8 @@ static const struct canonical_position_t expected_pos[] = {
 		.row_width = 4,
 		.loc_flags = CANONICAL_LOCFLAG_NORTH | CANONICAL_LOCFLAG_TOP | CANONICAL_LOCFLAG_RIGHT,
 		.adj_flags = ADJACENT_BOTTOM_LEFT | ADJACENT_BOTTOM_RIGHT | ADJACENT_LEFT,
+		.adjacent_count = 4,
+		.adjacent_tiles = { 0, 2, 7, 8 },
 	},
 	{
 		.tile_index = 4,
@@ -68,6 +76,8 @@ static const struct canonical_position_t expected_pos[] = {
 		.row_width = 5,
 		.loc_flags = CANONICAL_LOCFLAG_NORTH | CANONICAL_LOCFLAG_LEFT,
 		.adj_flags = ADJACENT_BOTTOM_LEFT | ADJACENT_BOTTOM_RIGHT | ADJACENT_RIGHT | ADJACENT_TOP_RIGHT,
+		.adjacent_count = 4,
+		.adjacent_tiles = { 0, 5, 9, 10 },
 	},
 	{
 		.tile_index = 5,
@@ -77,6 +87,8 @@ static const struct canonical_position_t expected_pos[] = {
 		.row_width = 5,
 		.loc_flags = CANONICAL_LOCFLAG_NORTH,
 		.adj_flags = ADJACENT_MASK_ALL,
+		.adjacent_count = 6,
+		.adjacent_tiles = { 0, 1, 4, 6, 10, 11 },
 	},
 	{
 		.tile_index = 6,
@@ -86,6 +98,8 @@ static const struct canonical_position_t expected_pos[] = {
 		.row_width = 5,
 		.loc_flags = CANONICAL_LOCFLAG_NORTH,
 		.adj_flags = ADJACENT_MASK_ALL,
+		.adjacent_count = 6,
+		.adjacent_tiles = { 1, 2, 5, 7, 11, 12 },
 	},
 	{
 		.tile_index = 7,
@@ -95,6 +109,8 @@ static const struct canonical_position_t expected_pos[] = {
 		.row_width = 5,
 		.loc_flags = CANONICAL_LOCFLAG_NORTH,
 		.adj_flags = ADJACENT_MASK_ALL,
+		.adjacent_count = 6,
+		.adjacent_tiles = { 2, 3, 6, 8, 12, 13 },
 	},
 	{
 		.tile_index = 8,
@@ -104,6 +120,8 @@ static const struct canonical_position_t expected_pos[] = {
 		.row_width = 5,
 		.loc_flags = CANONICAL_LOCFLAG_NORTH | CANONICAL_LOCFLAG_RIGHT,
 		.adj_flags = ADJACENT_TOP_LEFT | ADJACENT_LEFT | ADJACENT_BOTTOM_LEFT | ADJACENT_BOTTOM_RIGHT,
+		.adjacent_count = 4,
+		.adjacent_tiles = { 3, 7, 13, 14 },
 	},
 	{
 		.tile_index = 9,
@@ -113,6 +131,8 @@ static const struct canonical_position_t expected_pos[] = {
 		.row_width = 6,
 		.loc_flags = CANONICAL_LOCFLAG_NORTH | CANONICAL_LOCFLAG_LEFT,
 		.adj_flags = ADJACENT_TOP_RIGHT | ADJACENT_RIGHT | ADJACENT_BOTTOM_LEFT | ADJACENT_BOTTOM_RIGHT,
+		.adjacent_count = 4,
+		.adjacent_tiles = { 4, 10, 15, 16 },
 	},
 	{
 		.tile_index = 10,
@@ -122,6 +142,8 @@ static const struct canonical_position_t expected_pos[] = {
 		.row_width = 6,
 		.loc_flags = CANONICAL_LOCFLAG_NORTH,
 		.adj_flags = ADJACENT_MASK_ALL,
+		.adjacent_count = 6,
+		.adjacent_tiles = { 4, 5, 9, 11, 16, 17 },
 	},
 	{
 		.tile_index = 11,
@@ -131,6 +153,8 @@ static const struct canonical_position_t expected_pos[] = {
 		.row_width = 6,
 		.loc_flags = CANONICAL_LOCFLAG_NORTH,
 		.adj_flags = ADJACENT_MASK_ALL,
+		.adjacent_count = 6,
+		.adjacent_tiles = { 5, 6, 10, 12, 17, 18 },
 	},
 	{
 		.tile_index = 12,
@@ -140,6 +164,8 @@ static const struct canonical_position_t expected_pos[] = {
 		.row_width = 6,
 		.loc_flags = CANONICAL_LOCFLAG_NORTH,
 		.adj_flags = ADJACENT_MASK_ALL,
+		.adjacent_count = 6,
+		.adjacent_tiles = { 6, 7, 11, 13, 18, 19 },
 	},
 	{
 		.tile_index = 13,
@@ -149,6 +175,8 @@ static const struct canonical_position_t expected_pos[] = {
 		.row_width = 6,
 		.loc_flags = CANONICAL_LOCFLAG_NORTH,
 		.adj_flags = ADJACENT_MASK_ALL,
+		.adjacent_count = 6,
+		.adjacent_tiles = { 7, 8, 12, 14, 19, 20 },
 	},
 	{
 		.tile_index = 14,
@@ -158,6 +186,8 @@ static const struct canonical_position_t expected_pos[] = {
 		.row_width = 6,
 		.loc_flags = CANONICAL_LOCFLAG_NORTH | CANONICAL_LOCFLAG_RIGHT,
 		.adj_flags = ADJACENT_TOP_LEFT | ADJACENT_LEFT | ADJACENT_BOTTOM_LEFT | ADJACENT_BOTTOM_RIGHT,
+		.adjacent_count = 4,
+		.adjacent_tiles = { 8, 13, 20, 21 },
 	},
 	{
 		.tile_index = 15,
@@ -167,6 +197,8 @@ static const struct canonical_position_t expected_pos[] = {
 		.row_width = 7,
 		.loc_flags = CANONICAL_LOCFLAG_EQUATOR | CANONICAL_LOCFLAG_LEFT,
 		.adj_flags = ADJACENT_TOP_RIGHT | ADJACENT_RIGHT | ADJACENT_BOTTOM_RIGHT,
+		.adjacent_count = 4,
+		.adjacent_tiles = { 9, 16, 21, 22 },
 	},
 	{
 		.tile_index = 16,
@@ -176,6 +208,8 @@ static const struct canonical_position_t expected_pos[] = {
 		.row_width = 7,
 		.loc_flags = CANONICAL_LOCFLAG_EQUATOR,
 		.adj_flags = ADJACENT_MASK_ALL,
+		.adjacent_count = 6,
+		.adjacent_tiles = { 9, 10, 15, 17, 22, 23 },
 	},
 	{
 		.tile_index = 17,
@@ -185,6 +219,8 @@ static const struct canonical_position_t expected_pos[] = {
 		.row_width = 7,
 		.loc_flags = CANONICAL_LOCFLAG_EQUATOR,
 		.adj_flags = ADJACENT_MASK_ALL,
+		.adjacent_count = 6,
+		.adjacent_tiles = { 10, 11, 16, 18, 23, 24 },
 	},
 	{
 		.tile_index = 18,
@@ -194,6 +230,8 @@ static const struct canonical_position_t expected_pos[] = {
 		.row_width = 7,
 		.loc_flags = CANONICAL_LOCFLAG_EQUATOR,
 		.adj_flags = ADJACENT_MASK_ALL,
+		.adjacent_count = 6,
+		.adjacent_tiles = { 11, 12, 17, 19, 24, 25 },
 	},
 	{
 		.tile_index = 19,
@@ -203,6 +241,8 @@ static const struct canonical_position_t expected_pos[] = {
 		.row_width = 7,
 		.loc_flags = CANONICAL_LOCFLAG_EQUATOR,
 		.adj_flags = ADJACENT_MASK_ALL,
+		.adjacent_count = 6,
+		.adjacent_tiles = { 12, 13, 18, 20, 25, 26 },
 	},
 	{
 		.tile_index = 20,
@@ -212,6 +252,8 @@ static const struct canonical_position_t expected_pos[] = {
 		.row_width = 7,
 		.loc_flags = CANONICAL_LOCFLAG_EQUATOR,
 		.adj_flags = ADJACENT_MASK_ALL,
+		.adjacent_count = 6,
+		.adjacent_tiles = { 13, 14, 19, 21, 26, 27 },
 	},
 	{
 		.tile_index = 21,
@@ -221,6 +263,8 @@ static const struct canonical_position_t expected_pos[] = {
 		.row_width = 7,
 		.loc_flags = CANONICAL_LOCFLAG_EQUATOR | CANONICAL_LOCFLAG_RIGHT,
 		.adj_flags = ADJACENT_TOP_LEFT | ADJACENT_LEFT | ADJACENT_BOTTOM_LEFT,
+		.adjacent_count = 4,
+		.adjacent_tiles = { 14, 15, 20, 27 },
 	},
 	{
 		.tile_index = 22,
@@ -230,6 +274,8 @@ static const struct canonical_position_t expected_pos[] = {
 		.row_width = 6,
 		.loc_flags = CANONICAL_LOCFLAG_SOUTH | CANONICAL_LOCFLAG_LEFT,
 		.adj_flags = ADJACENT_TOP_LEFT | ADJACENT_TOP_RIGHT | ADJACENT_RIGHT | ADJACENT_BOTTOM_RIGHT,
+		.adjacent_count = 4,
+		.adjacent_tiles = { 15, 16, 23, 28 },
 	},
 	{
 		.tile_index = 23,
@@ -374,6 +420,10 @@ static void test_adjacency_pos(void) {
 		test_assert_int_eq(calculated.row_width, expected->row_width);
 		test_assert_int_eq(calculated.loc_flags, expected->loc_flags);
 		test_assert_int_eq(calculated.adj_flags, expected->adj_flags);
+		test_assert_int_eq(calculated.adjacent_count, expected->adjacent_count);
+		for (int j = 0; j < calculated.adjacent_count; j++) {
+			test_assert_int_eq(calculated.adjacent_tiles[j], expected->adjacent_tiles[j]);
+		}
 		if (get_subtest_failure_count()) {
 			fprintf(stderr, "Calculated:\n");
 			dump_canonical_pos(&calculated);
